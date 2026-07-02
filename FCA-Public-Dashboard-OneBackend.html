@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FCA Public Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#EFEDE3;
+  --bg-alt:#E4E1D3;
+  --paper:#FBFAF6;
+  --ink:#1E2A1F;
+  --ink-soft:#5B6B5D;
+  --green:#2F4F3A;
+  --green-deep:#1B2E22;
+  --gold:#C99A2E;
+  --gold-soft:#EFDFAF;
+  --blue:#3A7CA5;
+  --blue-soft:#DCE9F0;
+  --red:#B33A3A;
+  --line:#CFC9AF;
+  --shadow:0 1px 2px rgba(30,42,31,.06), 0 4px 14px rgba(30,42,31,.05);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Public Sans', sans-serif;
+  font-size:14px;
+  line-height:1.5;
+  min-height:100vh;
+}
+h1,h2,h3,h4{font-family:'Fraunces', serif; margin:0; color:var(--green-deep); font-weight:600;}
+button,input,select{font-family:inherit;}
+.header{
+  background:var(--green-deep);
+  color:#E7E5D8;
+  padding:28px 36px;
+  border-bottom:6px solid var(--gold);
+}
+.header-wrap{
+  max-width:1280px;
+  margin:0 auto;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:24px;
+}
+.brand{display:flex; align-items:center; gap:14px;}
+.seal{
+  width:48px; height:48px; border-radius:50%;
+  border:2px solid var(--gold);
+  color:var(--gold);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Fraunces', serif; font-weight:700;
+}
+.eyebrow{font-size:11px; text-transform:uppercase; letter-spacing:.9px; color:#B7BFA8; margin-bottom:4px;}
+.header h1{font-size:28px; color:#F4F2E6;}
+.header .sub{font-size:12px; color:#CBD1BE; margin-top:4px;}
+.header-actions{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;}
+.status-pill{
+  border:1px solid rgba(231,229,216,.24);
+  color:#F4F2E6;
+  padding:7px 10px;
+  font-size:11px;
+  border-radius:999px;
+  background:rgba(255,255,255,.06);
+}
+.btn{
+  border:1px solid var(--gold);
+  background:var(--gold);
+  color:#2A2005;
+  padding:9px 14px;
+  border-radius:3px;
+  font-weight:700;
+  font-size:12px;
+  cursor:pointer;
+}
+.btn:hover{filter:brightness(.95);}
+.main{max-width:1280px; margin:0 auto; padding:28px 36px 50px;}
+.notice{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-left:4px solid var(--blue);
+  padding:13px 16px;
+  margin-bottom:18px;
+  color:var(--ink-soft);
+  box-shadow:var(--shadow);
+}
+.notice b{color:var(--ink);}
+.kpis{display:grid; grid-template-columns:repeat(6,1fr); gap:14px; margin-bottom:20px;}
+.kpi{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-left:4px solid var(--green);
+  padding:14px 16px;
+  box-shadow:var(--shadow);
+  min-height:96px;
+}
+.kpi.gold{border-left-color:var(--gold);}
+.kpi.blue{border-left-color:var(--blue);}
+.kpi.red{border-left-color:var(--red);}
+.kpi .label{font-size:10px; text-transform:uppercase; letter-spacing:.5px; color:var(--ink-soft);}
+.kpi .value{font-family:'Fraunces', serif; font-weight:700; font-size:23px; margin-top:6px; color:var(--green-deep);}
+.kpi .sub{font-size:10.5px; color:var(--ink-soft); margin-top:3px;}
+.grid{display:grid; gap:18px;}
+.grid.two{grid-template-columns:1.15fr .85fr;}
+.grid.equal{grid-template-columns:1fr 1fr;}
+.card{
+  background:var(--paper);
+  border:1px solid var(--line);
+  padding:18px 20px;
+  box-shadow:var(--shadow);
+  min-width:0;
+}
+.card h3{
+  font-size:15px;
+  margin-bottom:12px;
+  padding-bottom:9px;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.card h3 .tag{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:10px;
+  font-weight:500;
+  color:#2A2005;
+  background:var(--gold-soft);
+  padding:3px 6px;
+  border-radius:2px;
+}
+.chart-box{position:relative; min-height:310px;}
+.chart-box.small{min-height:250px;}
+canvas{width:100%;}
+.table-wrap{overflow:auto; max-height:430px; border:1px solid var(--line);}
+table{width:100%; border-collapse:collapse; font-size:12.5px; background:var(--paper);}
+th{
+  position:sticky; top:0;
+  text-align:left;
+  background:var(--green-deep);
+  color:#F4F2E6;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.35px;
+  padding:8px;
+  white-space:nowrap;
+  z-index:1;
+}
+td{padding:7px 8px; border-bottom:1px solid var(--line); vertical-align:middle;}
+td.num{text-align:right; font-family:'IBM Plex Mono', monospace;}
+tbody tr:hover td{background:var(--bg-alt);}
+.empty-note{padding:34px 16px; text-align:center; color:var(--ink-soft); font-style:italic;}
+.footer{margin-top:24px; font-size:11px; color:var(--ink-soft); text-align:center;}
+.error{
+  display:none;
+  background:#F3DEDE;
+  border:1px solid #B33A3A;
+  color:#6F1E1E;
+  padding:12px 14px;
+  margin-bottom:18px;
+}
+.loading{display:flex; align-items:center; gap:10px; padding:16px; background:var(--paper); border:1px solid var(--line); margin-bottom:18px;}
+.spinner{width:18px; height:18px; border:3px solid var(--line); border-top-color:var(--green); border-radius:50%; animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@media(max-width:1150px){.kpis{grid-template-columns:repeat(3,1fr);} .grid.two,.grid.equal{grid-template-columns:1fr;}}
+@media(max-width:720px){
+  .header{padding:22px 18px;}
+  .header-wrap{align-items:flex-start; flex-direction:column;}
+  .main{padding:20px 14px 38px;}
+  .kpis{grid-template-columns:1fr 1fr;}
+  .kpi .value{font-size:20px;}
+  .chart-box{min-height:260px;}
+}
+@media(max-width:460px){.kpis{grid-template-columns:1fr;} .brand{align-items:flex-start;} .seal{width:42px;height:42px;}}
+@media print{.header-actions,.btn{display:none!important;} .header{background:#fff;color:#000;border-bottom:2px solid #000;} .header h1{color:#000;} .main{padding:18px;} .card,.kpi,.notice{box-shadow:none;} body{background:#fff;}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-wrap">
+    <div class="brand">
+      <div class="seal">FCA</div>
+      <div>
+        <div class="eyebrow">Public Viewing Dashboard</div>
+        <h1>FCA Commodity & Production Summary</h1>
+        <div class="sub">Aggregated agricultural information only — no names, addresses, contacts, or member records displayed.</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="status-pill" id="lastUpdated">Last updated: —</div>
+      <button class="btn" id="refreshBtn">Refresh</button>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="notice"><b>Privacy mode:</b> This public dashboard uses a summary-only backend response. It does not display or receive personal names, organization addresses, contact numbers, member lists, buyer/provider names, or financing source names.</div>
+  <div class="error" id="errorBox"></div>
+  <div class="loading" id="loadingBox"><div class="spinner"></div><div>Loading public dashboard summary...</div></div>
+
+  <section class="kpis" id="kpiGrid"></section>
+
+  <section class="grid two" style="margin-bottom:18px;">
+    <div class="card">
+      <h3>Commodities Planted by Hectarage <span class="tag">Auto-ranked by area</span></h3>
+      <div class="chart-box"><canvas id="cropChart"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Livestock / Poultry / Fishery Heads <span class="tag">Aggregated</span></h3>
+      <div class="chart-box"><canvas id="productionChart"></canvas></div>
+    </div>
+  </section>
+
+  <section class="grid equal" style="margin-bottom:18px;">
+    <div class="card">
+      <h3>Commodity Planted Summary <span class="tag" id="cropCount">0 items</span></h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Area Rank</th>
+              <th>Commodity Planted</th>
+              <th>Total Area (Ha.)</th>
+              <th>Irrigated (Ha.)</th>
+              <th>Potential Area (Ha.)</th>
+              <th>Avg. Yield</th>
+              <th>Avg. Value</th>
+            </tr>
+          </thead>
+          <tbody id="cropTable"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Livestock / Poultry / Fishery Summary <span class="tag" id="prodCount">0 items</span></h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Commodity / Livestock / Poultry</th>
+              <th>Total Heads</th>
+              <th>Entries</th>
+            </tr>
+          </thead>
+          <tbody id="productionTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid equal" style="margin-bottom:18px;">
+    <div class="card">
+      <h3>Water Source Distribution <span class="tag">Barangay-level</span></h3>
+      <div class="chart-box small"><canvas id="waterChart"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Topography Distribution <span class="tag">Barangay-level</span></h3>
+      <div class="chart-box small"><canvas id="topographyChart"></canvas></div>
+    </div>
+  </section>
+
+  <section class="grid equal">
+    <div class="card">
+      <h3>Assistance / Projects Summary <span class="tag">Status counts</span></h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Category</th><th>Total</th><th>Functional</th><th>Non-functional</th></tr>
+          </thead>
+          <tbody id="assistanceTable"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Organizational Capacity Summary <span class="tag">Yes / No</span></h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Capacity Area</th><th>Yes</th><th>No</th></tr>
+          </thead>
+          <tbody id="capacityTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">Public dashboard generated from FCA Ledger summarized data only.</div>
+</main>
+
+<script>
+const PUBLIC_DASHBOARD_URL = 'https://script.google.com/macros/s/AKfycbwmCCVUEX5VgXpZJTfZPnYpSt1m3e1eTSSapa-vvRoLFlcvA6XjZS76AwHoshchXXrh/exec';
+let charts = {};
+
+function fmtNum(value, decimals=2){
+  const n = parseFloat(value);
+  if(isNaN(n)) return '0';
+  return n.toLocaleString('en-PH', {maximumFractionDigits:decimals});
+}
+function fmtPhp(value){
+  const n = parseFloat(value);
+  if(isNaN(n) || n === 0) return '—';
+  return '₱' + n.toLocaleString('en-PH', {maximumFractionDigits:2});
+}
+function safeText(value){
+  return String(value ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function shortDate(value){
+  if(!value) return '—';
+  const d = new Date(value);
+  if(isNaN(d.getTime())) return String(value);
+  return d.toLocaleDateString('en-PH', {year:'numeric', month:'short', day:'numeric'}) + ' ' + d.toLocaleTimeString('en-PH', {hour:'2-digit', minute:'2-digit'});
+}
+function destroyCharts(){
+  Object.values(charts).forEach(ch => ch && ch.destroy());
+  charts = {};
+}
+async function fetchPublicData(){
+  const res = await fetch(PUBLIC_DASHBOARD_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({action:'publicDashboard'})
+  });
+  const json = await res.json();
+  if(!json.ok) throw new Error(json.message || 'Public dashboard request failed. Make sure the updated Apps Script backend is deployed.');
+  return json.data || {};
+}
+async function loadDashboard(){
+  const loading = document.getElementById('loadingBox');
+  const error = document.getElementById('errorBox');
+  loading.style.display = 'flex';
+  error.style.display = 'none';
+  try{
+    const data = await fetchPublicData();
+    renderDashboard(data);
+  }catch(err){
+    error.innerHTML = '<b>Dashboard could not load.</b><br>' + safeText(err.message) + '<br><br>Upload or paste the updated <b>google-apps-script-public-dashboard.gs</b> in Apps Script, deploy a new Web App version, then refresh this page.';
+    error.style.display = 'block';
+  }finally{
+    loading.style.display = 'none';
+  }
+}
+function renderDashboard(data){
+  const totals = data.totals || {};
+  document.getElementById('lastUpdated').textContent = 'Last updated: ' + shortDate(data.lastUpdated || data.generatedAt);
+  renderKpis(totals);
+  renderCrops(data.crops || []);
+  renderProduction(data.production || []);
+  renderListChart('waterChart', data.waterSources || [], 'Water Source');
+  renderListChart('topographyChart', data.topography || [], 'Topography');
+  renderAssistance(data.assistance || []);
+  renderCapacity(data.capacity || []);
+}
+function renderKpis(t){
+  const cards = [
+    ['FCA Records', fmtNum(t.organizations,0), 'summary count only', ''],
+    ['Total Farm Area', fmtNum(t.totalFarmArea), 'hectares', 'blue'],
+    ['Crop Area Planted', fmtNum(t.cropArea), 'hectares', 'gold'],
+    ['Irrigated Crop Area', fmtNum(t.irrigatedCropArea), 'hectares', 'blue'],
+    ['Active Members', fmtNum(t.members,0), 'count only, no names', ''],
+    ['Trainings Recorded', fmtNum(t.trainings,0), 'public count', 'gold']
+  ];
+  document.getElementById('kpiGrid').innerHTML = cards.map(([label,value,sub,cls])=>`
+    <div class="kpi ${cls}"><div class="label">${safeText(label)}</div><div class="value">${safeText(value)}</div><div class="sub">${safeText(sub)}</div></div>
+  `).join('');
+}
+function renderCrops(crops){
+  document.getElementById('cropCount').textContent = crops.length + (crops.length === 1 ? ' item' : ' items');
+  document.getElementById('cropTable').innerHTML = crops.length ? crops.map(row=>`
+    <tr>
+      <td class="num">${fmtNum(row.areaRank,0)}</td>
+      <td>${safeText(row.commodity)}</td>
+      <td class="num">${fmtNum(row.totalArea)}</td>
+      <td class="num">${fmtNum(row.irrigatedArea)}</td>
+      <td class="num">${fmtNum(row.potentialArea)}</td>
+      <td class="num">${row.averageYield ? fmtNum(row.averageYield) + ' tons/ha' : '—'}</td>
+      <td class="num">${fmtPhp(row.averageValue)}</td>
+    </tr>
+  `).join('') : '<tr><td colspan="7"><div class="empty-note">No crop records available.</div></td></tr>';
+
+  destroyChart('cropChart');
+  const top = crops.slice(0, 15);
+  if(!top.length) return;
+  charts.cropChart = new Chart(document.getElementById('cropChart'), {
+    type:'bar',
+    data:{labels:top.map(x=>x.commodity), datasets:[{label:'Total Area (Ha.)', data:top.map(x=>x.totalArea), backgroundColor:'#2F4F3A', borderRadius:3}]},
+    options:{indexAxis:'y', maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{grid:{color:'#CFC9AF55'}}, y:{grid:{display:false}}}}
+  });
+}
+function renderProduction(items){
+  document.getElementById('prodCount').textContent = items.length + (items.length === 1 ? ' item' : ' items');
+  document.getElementById('productionTable').innerHTML = items.length ? items.map(row=>`
+    <tr>
+      <td>${safeText(row.commodity)}</td>
+      <td class="num">${fmtNum(row.totalHeads,0)}</td>
+      <td class="num">${fmtNum(row.entries,0)}</td>
+    </tr>
+  `).join('') : '<tr><td colspan="3"><div class="empty-note">No livestock / poultry / fishery records available.</div></td></tr>';
+
+  destroyChart('productionChart');
+  const top = items.slice(0, 15);
+  if(!top.length) return;
+  charts.productionChart = new Chart(document.getElementById('productionChart'), {
+    type:'bar',
+    data:{labels:top.map(x=>x.commodity), datasets:[{label:'Total Heads', data:top.map(x=>x.totalHeads), backgroundColor:'#C99A2E', borderRadius:3}]},
+    options:{maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{grid:{color:'#CFC9AF55'}}, x:{grid:{display:false}, ticks:{maxRotation:55,minRotation:0}}}}
+  });
+}
+function renderListChart(canvasId, items, label){
+  destroyChart(canvasId);
+  const top = items.slice(0, 10);
+  if(!top.length) return;
+  charts[canvasId] = new Chart(document.getElementById(canvasId), {
+    type:'doughnut',
+    data:{labels:top.map(x=>x.label), datasets:[{label:label, data:top.map(x=>x.count), backgroundColor:['#2F4F3A','#3A7CA5','#C99A2E','#B33A3A','#7C9885','#8A6FB0','#A9A18C','#5B6B5D','#B7BFA8','#EFDFAF']}]},
+    options:{maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{boxWidth:11, font:{size:10.5}}}}}
+  });
+}
+function renderAssistance(items){
+  document.getElementById('assistanceTable').innerHTML = items.length ? items.map(row=>`
+    <tr>
+      <td>${safeText(row.category)}</td>
+      <td class="num">${fmtNum(row.total,0)}</td>
+      <td class="num">${fmtNum(row.functional,0)}</td>
+      <td class="num">${fmtNum(row.nonFunctional,0)}</td>
+    </tr>
+  `).join('') : '<tr><td colspan="4"><div class="empty-note">No assistance/project records available.</div></td></tr>';
+}
+function renderCapacity(items){
+  document.getElementById('capacityTable').innerHTML = items.length ? items.map(row=>`
+    <tr>
+      <td>${safeText(row.label)}</td>
+      <td class="num">${fmtNum(row.yes,0)}</td>
+      <td class="num">${fmtNum(row.no,0)}</td>
+    </tr>
+  `).join('') : '<tr><td colspan="3"><div class="empty-note">No capacity records available.</div></td></tr>';
+}
+function destroyChart(id){
+  if(charts[id]){
+    charts[id].destroy();
+    delete charts[id];
+  }
+}
+document.getElementById('refreshBtn').addEventListener('click', loadDashboard);
+loadDashboard();
+</script>
+</body>
+</html>
